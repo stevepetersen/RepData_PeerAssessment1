@@ -1,11 +1,6 @@
----
-title: "Reproducable Research - Peer Assignment 1"
-author: "Steve Petersen"
-date: "April 19, 2015"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducable Research - Peer Assignment 1
+Steve Petersen  
+April 19, 2015  
 
 ## Introduction and Context
 
@@ -14,7 +9,8 @@ It is now possible to collect a large amount of data about personal movement usi
 This assignment makes use of data from a personal activity monitoring device. This device collects data at 5 minute intervals through out the day. The data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day.
 
 This document uses the following libraries:
-```{r message=FALSE}
+
+```r
 library(dplyr)
 library(timeDate)
 ```
@@ -34,18 +30,44 @@ The variables included in this dataset are:
 The dataset is stored in a comma-separated-value (CSV) file and there are a total of 17,568 observations in this dataset.
 
 The following R code loads, reformulates and shows a summary of the data:
-```{r message=FALSE}
+
+```r
 activity <- read.csv("activity.csv")
 activity$date <- as.Date(activity$date, format = "%Y-%m-%d")
 activity$weekend <- factor(weekdays(activity$date), levels = c("Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"), labels = c("Weekend", "Weekend", "Weekday", "Weekday", "Weekday", "Weekday", "Weekday"))
+```
+
+```
+## Warning in `levels<-`(`*tmp*`, value = if (nl == nL) as.character(labels)
+## else paste0(labels, : duplicated levels in factors are deprecated
+```
+
+```r
 summary(activity)
+```
+
+```
+## Warning in `levels<-`(`*tmp*`, value = if (nl == nL) as.character(labels)
+## else paste0(labels, : duplicated levels in factors are deprecated
+```
+
+```
+##      steps             date               interval         weekend     
+##  Min.   :  0.00   Min.   :2012-10-01   Min.   :   0.0   Weekend: 4608  
+##  1st Qu.:  0.00   1st Qu.:2012-10-16   1st Qu.: 588.8   Weekend:    0  
+##  Median :  0.00   Median :2012-10-31   Median :1177.5   Weekday:12960  
+##  Mean   : 37.38   Mean   :2012-10-31   Mean   :1177.5   Weekday:    0  
+##  3rd Qu.: 12.00   3rd Qu.:2012-11-15   3rd Qu.:1766.2   Weekday:    0  
+##  Max.   :806.00   Max.   :2012-11-30   Max.   :2355.0   Weekday:    0  
+##  NA's   :2304                                           Weekday:    0
 ```
 
 
 ## What is mean total number of steps taken per day?
 
 The steps-per-day data can be visualized using a histogram:
-```{r}
+
+```r
 stepsperday <- activity %>% group_by(date) %>% summarise(step_total = sum(steps))
 mean <- mean(stepsperday$step_total, na.rm=TRUE)
 median <- median(stepsperday$step_total, na.rm=TRUE)
@@ -55,30 +77,40 @@ abline(v = jitter(median), col = "red", lwd = 2)
 legend("topright", legend = c("median", "mean"), lty=c(1,1), lwd=c(2.5,2.5), col = c("red", "blue"))
 ```
 
-From the graph above, you can see that the mean is `r mean` steps per day, and the median is `r median` steps per day.
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
+
+From the graph above, you can see that the mean is 1.0766189\times 10^{4} steps per day, and the median is 10765 steps per day.
 
 
 
 ## What is the average daily activity pattern?
-```{r}
+
+```r
 stepsperinterval <- activity %>% group_by(interval) %>% summarise(step_average = mean(steps, na.rm=TRUE))
 plot(stepsperinterval$interval, stepsperinterval$step_average, type="l", main="Steps per interval", xlab="Interval", ylab="Number of Steps")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
+
+```r
 maxInterval <- stepsperinterval[which.max(stepsperinterval$step_average),]$interval
 ```
 
-The 5-minute interval, on average across all the days in the dataset, that contains the maximum number of steps is maxInterval=`r maxInterval`.
+The 5-minute interval, on average across all the days in the dataset, that contains the maximum number of steps is maxInterval=835.
 
 
 ## Imputing missing values
-```{r}
+
+```r
 incomplete_cases = length(which(!complete.cases(activity)))
 ```
 
-The number of incomplete cases in the data set is `r incomplete_cases`.
+The number of incomplete cases in the data set is 2304.
 
 A simple way to impute the missing data is to set it to the mean per interval:
 
-```{r}
+
+```r
 stepsperinterval <- activity %>% group_by(interval) %>% summarise(step_total = sum(steps))
 meanperinterval <- mean(stepsperinterval$step_total, na.rm=TRUE)
 activity$steps[!complete.cases(activity)] = meanperinterval
@@ -86,7 +118,8 @@ activity$steps[!complete.cases(activity)] = meanperinterval
 
 And re-run the graphs from above:
 
-```{r}
+
+```r
 stepsperday2 <- activity %>% group_by(date) %>% summarise(step_total = sum(steps))
 mean2 <- mean(stepsperday2$step_total, na.rm=TRUE)
 median2 <- median(stepsperday2$step_total, na.rm=TRUE)
@@ -96,7 +129,9 @@ abline(v = jitter(median2), col = "red", lwd = 2)
 legend("topright", legend = c("median", "mean"), lty=c(1,1), lwd=c(2.5,2.5), col = c("red", "blue"))
 ```
 
-From the graph above, you can see that the new mean is `r mean2` steps per day, and the median is `r median2`.  Only the median changes from the data above.
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png) 
+
+From the graph above, you can see that the new mean is 1.0766189\times 10^{4} steps per day, and the median is 1.0765\times 10^{4}.  Only the median changes from the data above.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
@@ -104,12 +139,13 @@ From the graph above, you can see that the new mean is `r mean2` steps per day, 
 There are definite differences in activity patterns between weekdays and weekends.  For a summary please refer to the following graph:
 
 
-```{r}
+
+```r
 stepsperintervalweekday <- activity %>% group_by(interval) %>% filter(weekend=="Weekday") %>% summarise(step_average = mean(steps, na.rm=TRUE))
 stepsperintervalweekend <- activity %>% group_by(interval) %>% filter(weekend=="Weekend") %>% summarise(step_average = mean(steps, na.rm=TRUE))
 par(mfrow=c(2,1))
 plot(stepsperintervalweekday$interval, stepsperintervalweekday$step_average, type="l", main="Steps per interval on Weekdays", xlab="Interval", ylab="Number of Steps")
 plot(stepsperintervalweekend$interval, stepsperintervalweekend$step_average, type="l", main="Steps per interval on Weekends", xlab="Interval", ylab="Number of Steps")
+```
 
-
-
+![](PA1_template_files/figure-html/unnamed-chunk-8-1.png) 
